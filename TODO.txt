@@ -1,0 +1,41 @@
+Outstanding issues
+
+Critical:
+
+Important:
+- Styling with new color scheme
+
+Good to have/fix:
+- It would be neat to gather what gets rolled as a log using the data store. Sortof a relational table with:
+    <realistic bool><damage type sting><random bool><body part string>
+    
+    We could have a statistics page (and a tiny link on the app page) showing the 
+        ** proportion by damage type, 
+        ** a hit counter, 
+        ** breakdown of targetted shots. 
+        ** Proportion of  hit using realistic threshold vs basic
+        
+    It is not very important at all, but I'm curious to see how to interact with data for future app. And the truly geek would
+    probably enjoy the stats. If you want to play with that, go ahead. If not, I'll give it a try later.
+    
+- A java script to toggle between realistic/basic thresholds.
+
+
+Not sure if it is worth it
+-- Implement a more detailed table from Low-Tech Instant Armor (I don't own this manual...)
+-- Graphic selector (we're not hot on that)
+
+
+Fixed:
+cb - Crash on adding,multiplying multipliers.
+cb - Display of non numerical multiplier.
+cb - Added a credit link section.
+cb - Remember the last damage type
+cb - Abdominal wound sublocations not handled.
+cb - Order the Threshold: use a list of [threshold, text] instead of a disctionary
+cb - Special Wound tables
+cb - Cutting, Face/Nose: multiple "Attacks that miss by..." notes; may have to do a UNIQUE on notes list.
+
+as - Hand foot neck and torso sublocations are not set to valid locations (With no notes mapping to them).
+as - Modifier float values properly translated to floats.
+as - Styling fixes, changed ordering of location list, cleaning up of code.

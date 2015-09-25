@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+	<head>
+
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+		<title>MeatGrinder: GURPS Hit Calculator</title>
+
+		<meta name="author" content="Alex Safatli and Christian Blouin" />
+		<meta name="description" content="GURPS Hit Location Calculator and Notes" />
+
+ 		<link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+ 		<link href="css/mobile.css" rel="stylesheet" type="text/css" media="only screen and (max-device-width:480px)" />
+		<link href="css/mobile.css" rel="stylesheet" type="text/css" media="handheld" />
+
+	</head>
+
+	<body>
+	
+		<div id="wrap">
+		
+			<form class="mgform">
+				<div class="mgformitem">
+					<button type="submit">Strike with</button>
+					<select name="atktype">
+					{% for type in types %}
+						{% if hit.atktype == type[0] %}
+							<option value="{{ type[0] }}" selected>{{ type[1] }} ({{ type[0] }})</option>
+						{% else %}
+							<option value="{{ type[0] }}">{{ type[1] }} ({{ type[0] }})</option>
+						{% endif %}
+					{% endfor %}
+					</select>
+					@
+					<select name="location">
+						<option value="random" selected>Random</option>
+					{% for locs in parts %}
+						{% if loc == locs %}
+							<option value="{{ locs }}" selected>{{ locs }} ({{ hitmod[locs] }})</option>
+						{% else %}
+							<option value="{{ locs }}">{{ locs }} ({{ hitmod[locs] }})</option>
+						{% endif %}
+					{% endfor %}
+					</select>
+				</div><div class="mgformitem">
+					<!-- Landing form case, ask if user wants to use realistic threshold -->
+					{% if hit == None %}
+						<div class="panel">
+							<p><input type="checkbox" name="realistic" value="1" >Use Realistic Threshold (MA136).</input><br>
+							<input type="checkbox" name="facesub" value="1" >Use <a href="http://forums.sjgames.com/showpost.php?p=1546303&postcount=34" target="_blank">face sub-locations</a>.</input></p>
+						</div>
+					{% else %}
+						<!-- realistic option -->
+						{% if hit.realistic %}
+							<input type="hidden" name="realistic" value="1" />
+						{% else %}
+							<input type="hidden" name="realistic" value="0" />
+						{% endif %}
+						<!-- Face sub-location -->
+						{% if hit.facesub %}
+							<input type="hidden" name="facesub" value="1" />
+						{% else %}
+							<input type="hidden" name="facesub" value="0" />
+						{% endif %}
+					{% endif %}
+				</div>
+			</form>
+		
+			{% if hit %}
+			<div class="outcome">
+			
+				<div class="panel left">
+					<p class="biggie">{{ hit.location[-1] }}</p> 
+					{% if hit.location[0] != hit.location[-1] %}
+						<p class="smaller">({{ hit.location[0] }})</p>
+					{% endif %}
+					<p class="smaller">
+						with <em>{{ hit.atktype }}</em> damage 
+						{% if hit.multiplier is number %}
+							<strong>X {{ hit.multiplier }}</strong> 
+						{% endif %}
+					</p>			
+					{% if hit.threshold %}
+					<table>
+						<tr><th width="45%">Threshold</th><th>Effect</th></tr>
+						{% for thres in hit.threshold %}
+						<tr><td width="45%"><strong>{{ thres[0] }}</strong>
+						</td> <td>{{ thres[1] }}</td></tr>
+						{% endfor %}
+					</table>
+					{% endif %}
+				</div>
+			
+				{% if hit.critical %}
+				<div class="panel right">
+					<h3>In case of critical:</h3>
+					<p>{{ hit.critical }}</p>
+				</div>
+				{% endif %}
+			
+				{% if hit.wound %}
+				<div class="panel right">
+					<h3>In case of major wound:</h3>
+					<p>{{ hit.wound }}</p>
+				</div>
+				{% endif %}
+				
+				{% if hit.notes %}
+				<div class="panel right">
+					<h3>Notes</h3>
+					<ol>
+						{% for note in hit.notes %}
+						<li>{{ note }}</li>
+						{% endfor %}
+					</ol>
+				</div>
+				{% endif %}
+				
+			</div>
+			{% endif %}
+
+			<div class="clear"></div>
+			
+			<div id="fineprint">
+			
+				{% if hit %}
+				<div class="smaller"><em>This app helped to deliver <a href="./stats/">{{ hit.counter }}</a> blows so far.</em></div>
+				<p><a href="http://serendipity-engine.appspot.com/" target="_blank">Open Serenditpity Engine</a></p>
+				{% endif %}
+
+				<div id="thanks">
+					<p>You are using this app? Drop by to say thank you to 
+					<a href="https://plus.google.com/u/0/115705866453988357093/posts" target="_blank">+Christian Blouin</a> 
+					and <a href="https://plus.google.com/u/0/106697676547517787361/posts" target="_blank">+Alex Safatli</a>.</p>
+					<p>Please report issues and comment <a href="http://gurpspalantirquest.blogspot.ca/2013/05/web-app-for-hit-location-and-realistic.html" target="_blank">here</a>.</p>
+					<p>A paper version of the app's tables can be found in the excellent <a href="http://forums.sjgames.com/showthread.php?t=76205">Cheat Sheet v.2.04</a> by Onkl.</p>
+				</div>
+	
+				<div id="legal">			
+					<p>Material for this app came from <a href="http://e23.sjgames.com/item.html?id=SJG31-0002" target="_blank"> GURPS Basic Set: Campaign</a> and <a href="http://e23.sjgames.com/item.html?id=SJG31-0105" target="_blank">GURPS Martial Arts</a>. <a href="http://www.sjgames.com/gurps/" target="_blank">GURPS</a> is a trademark of Steve Jackson Games, and its rules and art are copyrighted by Steve Jackson Games. All rights are reserved by Steve Jackson Games. This game aid is the original creation of Alexander Safatli and Christian Blouin and is released for free distribution, and not for resale, under the permissions granted in the <a href="http://www.sjgames.com/general/online_policy.html"> Steve Jackson Games Online Policy</a>.</p>
+				</div>
+			
+			</div>
+			
+		</div>
+	
+	</body>
+
+</html>
