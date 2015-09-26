@@ -1,16 +1,25 @@
 # main.py
 # -------------------------
 # Summer 2013; Alex Safatli
+# Fall 2015; Alex Safatli
 # -------------------------
-# Webapp interface.
+# Google App Engine Interface with Python Code
 
 import webapp2, jinja2, os, cgi, meatgrinder
 from stattracker import Gatherer
 
+# HTML Templating
+
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader = jinja2.FileSystemLoader(os.path.dirname(__file__)))
+    loader = jinja2.FileSystemLoader(
+        os.path.dirname(__file__)))
+
+# Main Page Handler
 
 class MainPage(webapp2.RequestHandler):
+
+    # GET /
+
     def get(self):
     
         # Get parameters from form elements.
