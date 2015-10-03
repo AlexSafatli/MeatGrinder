@@ -5,9 +5,8 @@
 # API for handling hit location
 # determination using GURPS rules.
 
-import random as r
 import notetable, woundtable
-from rng import dice
+from rng import dice, choice
 from literals import *
 
 from stattracker import GrindHit, Counter
@@ -114,10 +113,10 @@ class locator:
             # Hand or feet.
             elif 'Hand' in loc:
                 if atktype in ['cr','cut','burn'] or 'pi' in atktype:
-                    self.location = (r.choice(['Left','Right'])+ ' ' + loc,'Wrist')
+                    self.location = (choice(['Left','Right'])+ ' ' + loc,'Wrist')
             elif 'Foot' in loc:
                 if atktype in ['cr','cut','burn'] or 'pi' in atktype:
-                    self.location = (r.choice(['Left','Right'])+ ' ' + loc,'Ankle') 
+                    self.location = (choice(['Left','Right'])+ ' ' + loc,'Ankle') 
                     
             # Neck or torso.
             elif 'Neck' in loc or 'Torso' in loc:

@@ -4,6 +4,8 @@
 # -------------------------
 # Random Number Generation Assets
 
+from random import randint, choice
+
 class dice:
     def __init__(self,num,sides):
         self.num = num
@@ -11,5 +13,5 @@ class dice:
     def roll(self):
         result = 0
         for i in xrange(self.num):
-            result += r.randint(1,self.sides)
+            result += randint(1,self.sides)
         return result
