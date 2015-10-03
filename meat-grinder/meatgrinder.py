@@ -7,89 +7,14 @@
 
 import random as r
 import notetable, woundtable
+from rng import dice
+from literals import *
+
 from stattracker import GrindHit, Counter
 from google.appengine.ext import db
 
-# Language Literals for the HTML interface.
-
-types = [['cut','Cutting'],['imp','Impaling'],
-         ['cr','Crushing'],['pi-','Piercing, Small'],
-         ['pi','Piercing, Normal'],['pi+','Piercing, Large'],
-         ['pi++','Piercing, Huge'],['aff','Affliction'],
-         ['burn','Burning'],['cor','Corrosion'],
-         ['fat','Fatigue'],['tox','Toxic']]
-
 parts = notetable.notes.keys()
 parts.sort()
-
-hitmod = {'Skull':'-7/-5','Face':'-5/-7',
-          'Right Leg':-2,'Right Arm':-2,'Torso':0,
-          'Abdomen':-1,'Left Arm':-2,'Forearm':-3,
-          'Upper Arm':-3, 'Thigh':-3, 'Shin':-3,
-          'Left Leg':-2,'Hand':-4,'Foot':-4,
-          'Neck':-5,'Vitals':-3,'Eye':-9,'Ear':-7,
-          'Nose':-7,'Jaw':-6,'Spine':-8,
-          'Arm Vascular':-5,'Leg Vascular':-5,
-          'Neck Vascular':-8,'Elbow':-5,'Knee':-5,
-          'Shoulder':-5,'Wrist':-7,'Ankle':-7,
-          'Groin':-3,'Pelvis':-3,'Digestive Tract':-2,
-          'Heart':-5,'Cheek':-6}
-
-# Rule Literals
-
-# Using Hit Location & Damage Modifier Table; B552
-# http://forums.sjgames.com/showthread.php?t=76205
-
-hit = {3:'Skull',4:'Skull',5:'Face',6:'Right Leg',
-       7:'Right Leg',8:'Right Arm',9:'Torso',
-       10:'Torso',11:'Abdomen',12:'Left Arm',
-       13:'Left Leg',14:'Left Leg',15:'Hand',
-       16:'Foot',17:'Neck',18:'Neck'}
-
-# Using Damage Type and Multipliers Table
-
-mult = {'aff':None,'burn':1.0,'cor':1.0,'cr':1.0,
-       'cut':1.5,'fat':None,'imp':2.0,'pi-':0.5,
-       'pi':1.0,'pi+':1.5,'pi++':2.0,'spec':None,
-       'tbb':1.0,'tox':1.0}
-
-# Realistic Injury (Martial Arts, p. 136)
-# Possible thresholds are -1 (all injury), HP/10, HP/5
-
-franyaction = 'for any action involving that location'
-arminj = [['slight','-1 DX %s (incl. two-handed tasks).' \
-          % (franyaction)],['HP/5-HP/3','-3 DX %s (incl. two-handed tasks).' \
-          % (franyaction)],['HP/3-HP/2','The arm is almost broken; Will roll to use; success at -5 DX.'],\
-          ['>HP/2','Crippled'],['>HP','Severed']]
-leginj = [['slight','-1 DX %s and with good leg if standing.' \
-          % (franyaction)],['HP/5-HP/3','-3 DX %s and -1 with good leg if standing.' \
-          % (franyaction)],['HP/3-HP/2','The leg is almost broken; Will roll to use.'],\
-          ['>HP/2','Crippled'],['>HP','Severed']]
-quarinj = [['>HP/4','Crippled'],['>HP/2','Severed']]
-
-inj = {'Right Arm':arminj,'Left Arm':arminj,'Arm': arminj,\
-       'Right Leg':leginj,'Left Leg':leginj,'Leg': arminj,\
-       'Torso':[['HP/3','-1 DX for all purposes.'],['HP/2','-2 DX, Move is 80 percent normal.'],
-                ['>2/3 HP','-3 DX, Move is 50 percent normal.']],\
-       'Eye':[['HP/10','Blinded'],['HP/10','Destroyed']],\
-       'Right Hand': quarinj,'Left Hand': quarinj,'Hand': quarinj,\
-       'Right Foot': quarinj,'Left Foot': quarinj,'Foot': quarinj,\
-       'Nose': quarinj,\
-       'Spine': [['HP/1','Crippled']]}
-
-# Random Number Generation
-
-class dice:
-    def __init__(self,num,sides):
-        self.num = num
-        self.sides = sides
-    def roll(self):
-        result = 0
-        for i in xrange(self.num):
-            result += r.randint(1,self.sides)
-        return result
-
-# Location Class
 
 class locator:
     
@@ -114,8 +39,8 @@ class locator:
         self.wound = None
         
         # Dice roller instances.
-        self.__dice__ = dice(3,6) # 3d6
-        self.__1d__ = dice(1,6) # 1d6
+        self.dice = dice(3,6) # 3d6
+        self.die = dice(1,6) # 1d6
         
         # Determine realistic, facesub filters.
         self.realistic = ('1' in realistic)
@@ -129,8 +54,7 @@ class locator:
         self.atktype = atktype
         
         # Determine location.
-        if location == 'random':
-            self.location = (hit[self.__dice__.roll()],)
+        if location == 'random': self.location = (hit[self.roll()],)
         else: self.location = (location,)
         
         # Set multiplier.
@@ -138,14 +62,12 @@ class locator:
         
         # ---- Handle thresholds and sublocations.  ---- #
         
-        # Get location from fields.
         loc = self.location[0]
-        # Auxiliary hit location dice.
-        rl = self.__1d__.roll()         
+        rl = self.die.roll()         
         
-        # Low Tech Hit for random location.
-        if 'Arm' in loc or 'Leg' in loc:
-            r2 = self.__1d__.roll()
+        # Low Tech Hit
+        if loc in ['Arm', 'Leg']:
+            r2 = self.die.roll()
             # Arm
             if 'Arm' in loc:
                 if r2 <= 3: self.location = (loc, 'Forearm')
@@ -156,17 +78,16 @@ class locator:
             if 'Leg' in loc:
                 if r2 <= 3: self.location = (loc, 'Shin')
                 elif r2 == 4: self.location = (loc, 'Knee')
-                elif r2 > 4: self.location = (loc, 'Thigh')  
-                
-        # Low Tech Hit for targetted location.
-        if loc in ['Shin', 'Knee', 'Thigh']:
+                elif r2 > 4: self.location = (loc, 'Thigh')
+        elif loc in ['Shin', 'Knee', 'Thigh']:
             self.location = ('Leg', loc)
             loc = 'Leg'
         elif loc in ['Forearm', 'Elbow', 'Upper Arm', 'Shoulder']:
             self.location = ('Arm', loc)    
             loc = 'Arm' 
         
-        if (rl == 1): # vascular damage or not?
+        # Vascular Damage?
+        if (rl == 1):
             
             # Arm or leg.
             if not 'Vascular' in loc and ('Arm' in loc or 'Leg' in loc) and not ('cr' in atktype):
@@ -213,9 +134,7 @@ class locator:
                 
         # Face sub-location (when not already resolved).
         if self.facesub and 'Face' == loc and len(self.location) == 1:
-            # die
-            r1 = self.__1d__.roll()
-            # Subloc
+            r1 = self.die.roll()
             if r1 == 1: self.location = (loc, 'Jaw')
             elif r1 == 2: self.location = (loc, 'Nose')
             elif r1 == 3: self.location = (loc, 'Ear')
@@ -232,9 +151,7 @@ class locator:
         
         # ---- Process critical hits. -------------------- #
         
-        if loc in ['Face', 'Skull', 'Eye', 
-                   'Ear', 'Nose', 'Cheek', 
-                   'Jaw']:
+        if loc in ['Face', 'Skull', 'Eye', 'Ear', 'Nose', 'Cheek', 'Jaw']:
             self.CriticalHead()
         else: self.CriticalHit()        
         
@@ -243,7 +160,7 @@ class locator:
         self.SaveStats(atktype,location)
         
     def roll(self):
-        return self.__dice__.roll()
+        return self.dice.roll()
     
     def SetThreshold(self):
         # Build Thresholds from option and return the results
@@ -348,7 +265,7 @@ class locator:
         
     # Critical Hit
     def CriticalHit(self):
-        r = self.__dice__.roll()
+        r = self.roll()
         if r in [3,18]: self.critical = '<em>Triple</em> damage.'
         elif r in [4,17]: self.critical = 'DR <em>halved</em>.'
         elif r in [5,16]: self.critical = '<em>Double</em> damage.'        
@@ -360,7 +277,7 @@ class locator:
             
     # Critical head injuries
     def CriticalHead(self):
-        r = self.__dice__.roll()
+        r = self.roll()
         if r == 3: self.critical = '<em>Maximum</em> damage <b>and</b> ignore DR.'
         elif r in [4,5]: self.critical = 'DR <em>halved</em> <b>and</b> treat a major wound.'
         elif r in [6,7]: self.critical = 'Treat as eye hit (front), or DR <em>halved</em> <b>and</b> treat a major wound (back).'        
