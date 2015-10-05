@@ -85,44 +85,38 @@ class locator:
             self.location = ('Arm', loc)    
             loc = 'Arm' 
         
-        # Vascular Damage?
-        if (rl == 1):
+        if (rl == 1): # Roll of 1.
             
             # Arm or leg.
-            if not 'Vascular' in loc and ('Arm' in loc or 'Leg' in loc) and not ('cr' in atktype):
-                # vascular hit!
+            if not 'Vascular' in loc and ('Arm' in loc or 'Leg' in loc
+                ) and not ('cr' in atktype): # Vascular Hit
                 # Get Side
                 side = loc.split()[0]
-                
-                # Chunk
-                if 'Arm' in loc: chunk = 'Arm'
-                else: chunk = 'Leg'
+                chunk = 'Arm' if ('Arm' in loc) else 'Leg'
                 
                 # Reformat locs
-                if len(loc.split()) == 1:
-                    self.location = (self.location[-1] ,'%s Vascular'%(chunk))
+                if len(loc.split()) == 1 or chunk in self.location[-1]:
+                    self.location = (self.location[-1], '%s Vascular' % (chunk))
                 else:
-                    self.location = (side + ' ' + self.location[-1] ,'%s Vascular'%(chunk))   
+                    self.location = (side + ' ' + self.location[-1], 
+                        '%s Vascular' % (chunk))
                     
             # In the face.
-            elif 'Face' in loc :
-                if atktype in ['imp','burn'] or 'pi' in atktype:
-                    self.location = (loc,'Skull')
-                else: self.location = (loc,'Nose')  
+            elif 'Face' in loc:
+                self.location = (loc, 'Skull' if (atktype in 
+                    ['imp','burn'] or 'pi' in atktype) else 'Nose')
                     
             # Hand or feet.
-            elif 'Hand' in loc:
-                if atktype in ['cr','cut','burn'] or 'pi' in atktype:
-                    self.location = (choice(['Left','Right'])+ ' ' + loc,'Wrist')
-            elif 'Foot' in loc:
-                if atktype in ['cr','cut','burn'] or 'pi' in atktype:
-                    self.location = (choice(['Left','Right'])+ ' ' + loc,'Ankle') 
+            elif atktype in ['cr','cut','burn'] or 'pi' in atktype and (
+                'Hand' in loc or 'Foot' in loc):
+                self.location = (choice(['Left','Right']) + ' ' + loc, 
+                    'Wrist' if ('Hand' in loc) else 'Ankle')
                     
             # Neck or torso.
-            elif 'Neck' in loc or 'Torso' in loc:
-                if atktype in ['cut','imp','burn'] or 'pi' in atktype:
-                    if 'Neck' in loc: self.location = (loc,'Neck Vascular')
-                    else: self.location = (loc,'Vitals')
+            elif atktype in ['cut','imp','burn'] or 'pi' in atktype and (
+                'Neck' in loc or 'Torso' in loc):
+                self.location = (loc, 
+                    'Neck Vascular' if ('Neck' in loc) else 'Vitals')
                         
         # Abdomen
         if 'Abdomen' == loc:
@@ -145,8 +139,8 @@ class locator:
 
         # ---- Process notes, wounds. -------------------- #
         
-        notetable.process_notes(self)
-        woundtable.process_wounds(self)
+        notetable.NoteProcessor(self)
+        woundtable.WoundProcessor(self)
         
         # ---- Process critical hits. -------------------- #
         
@@ -162,34 +156,21 @@ class locator:
         return self.dice.roll()
     
     def SetThreshold(self):
-        # Build Thresholds from option and return the results
-        franyaction = 'for any action involving that location'
-        
-        # Arms
+        fal = 'for any action involving that location'
         if self.realistic:
-            arminj = [['1 HP and more','-1 DX %s (incl. two-handed tasks).' \
-                  % (franyaction)],['over HP/5, up to HP/3','-3 DX %s (incl. two-handed tasks).' \
-                  % (franyaction)],['over HP/3, up to HP/2','The arm is almost broken; Will roll to use; success at -5 DX.']]
+            arminj = [['1 HP and more', '-1 DX %s (incl. two-handed tasks).' % (fal)],
+                      ['over HP/5, up to HP/3', '-3 DX %s (incl. two-handed tasks).' % (fal)],
+                      ['over HP/3, up to HP/2', 'The arm is almost broken; Will roll to use; success at -5 DX.']]
+            leginj = [['more than 1 HP','-1 DX %s and with good leg if standing.' % (fal)],
+                      ['over HP/5, up to HP/3','-3 DX %s and -1 with good leg if standing.' % (fal)],
+                      ['over HP/3, up to HP/2','The leg is almost broken; Will roll to use.']]
+            torsod = [['1 HP and more','-1 DX for all purposes.'],
+                      ['over HP/2','-2 DX Movement is 80% of normal.'],
+                      ['over 2/3HP','-3 DX. Movement is 50% of normal.']]
         else:
             arminj = []
-        #arminj.extend([['more than HP/2','Crippled'],['twice crippled','Severed']])
-        
-        # Legs
-        if self.realistic:
-            leginj = [['more than 1 HP','-1 DX %s and with good leg if standing.' \
-                  % (franyaction)],['over HP/5, up to HP/3','-3 DX %s and -1 with good leg if standing.' \
-                  % (franyaction)],['over HP/3, up to HP/2','The leg is almost broken; Will roll to use.']]
-        else:
-            leginj = []      
-        #leginj.extend([['over HP/2','Crippled'],['twice crippled','Severed']])       
-            
-        # Torso
-        if self.realistic:
-            torsod = [['1 HP and more','-1 DX for all purposes.' \
-                  ],['over HP/2','-2 DX Movement is 80% of normal.' \
-                  ],['over 2/3HP','-3 DX. Movement is 50% of normal.']]
-        else:
-            torsod = None     
+            leginj = []
+            torsod = None
         
         # Extremites
         quarinj = [['over HP/3','Crippled'],['twice crippled','Severed']]
@@ -198,19 +179,18 @@ class locator:
         jextre =  [['over HP/4','Crippled'],['twice crippled','Severed']]
         
         # Build full dictionary
-        inj = {'Right Arm':arminj,'Left Arm':arminj,'Arm': arminj,\
-               'Right Leg':leginj,'Left Leg':leginj,'Leg': arminj,\
-               'Torso': torsod,\
-               'Eye':[['over HP/10','Blinded'],['twice blinded','Destroyed']],\
-               'Right Hand': quarinj,'Left Hand': quarinj,'Hand': quarinj,\
-               'Right Foot': quarinj,'Left Foot': quarinj,'Foot': quarinj,\
-               'Nose': jextre,\
-               'Spine': [['over HP','Crippled']] } 
+        inj = { 'Right Arm': arminj, 'Left Arm': arminj, 'Arm': arminj, 
+                'Right Leg': leginj,'Left Leg': leginj,'Leg': arminj,
+               'Eye': [['over HP/10','Blinded'],['twice blinded','Destroyed']],
+               'Right Hand': quarinj,'Left Hand': quarinj,'Hand': quarinj,
+               'Right Foot': quarinj,'Left Foot': quarinj,'Foot': quarinj,
+               'Nose': jextre, 'Spine': [['over HP','Crippled']],
+               'Torso': torsod } 
         
         for side in ['Left', 'Right']:
             for part in ['Forearm', 'Upper Arm']:
                 inj [side + ' ' + part] = arminj + [['over HP/2','Crippled'],['twice crippled','Severed']] 
-                inj [ part] = arminj + [['over HP/2','Crippled'],['twice crippled','Severed']]                 
+                inj [part] = arminj + [['over HP/2','Crippled'],['twice crippled','Severed']]                 
             for part in ['Elbow', 'Shoulder']:
                 inj [side + ' ' + part] = arminj[:-1] + [['over HP/3','Crippled'],['twice crippled','Severed']]
                 inj [part] = arminj[:-1] + [['over HP/3','Crippled'],['twice crippled','Severed']]
@@ -225,8 +205,7 @@ class locator:
                 inj [part] = [['over HP/4','Crippled'],['twice crippled','Severed']]            
         
         loc = self.location[-1]
-        if loc in inj:
-            self.threshold = inj[loc]
+        if loc in inj: self.threshold = inj[loc]
         if self.threshold == None:
             self.threshold = [['over HP/2','Major Wound']]        
         

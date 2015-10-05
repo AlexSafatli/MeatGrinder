@@ -5,7 +5,7 @@
 # Library for handling wounds for
 # meatgrinder.
 
-class process_wounds:
+class WoundProcessor:
     def __init__(self, locator):
         # Instance of the locator.
         self.locator = locator
