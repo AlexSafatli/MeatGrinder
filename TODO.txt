@@ -3,7 +3,6 @@ Outstanding issues
 Critical:
 
 Important:
-- Styling with new color scheme
 
 Good to have/fix:
 - It would be neat to gather what gets rolled as a log using the data store. Sortof a relational table with:
@@ -39,3 +38,5 @@ cb - Cutting, Face/Nose: multiple "Attacks that miss by..." notes; may have to d
 as - Hand foot neck and torso sublocations are not set to valid locations (With no notes mapping to them).
 as - Modifier float values properly translated to floats.
 as - Styling fixes, changed ordering of location list, cleaning up of code.
+as - Repo maintenance and footer link updates
+as - Updated to Python 3.8

@@ -1,10 +1,14 @@
 # MeatGrinder
 
-This application is currently hosted using **Google App Engine** at [this address](http://meat-grinder.appspot.com).
+A web application for the GURPS roleplaying system that calculates a body location that is hit when an attack succeeds in combat, in addition to follow-up effects. A thread was maintained [here](http://gurpspalantirquest.blogspot.ca/2013/05/web-app-for-hit-location-and-realistic.html) to describe this tool.
 
-## Purpose
+This application is self-hostable using Docker.
 
-[Christian Blouin](https://github.com/bongotastic) and I created this application a couple of years back to manage calculating what body location an attack hits in the GURPS roleplaying system. A thread was maintained [here](http://gurpspalantirquest.blogspot.ca/2013/05/web-app-for-hit-location-and-realistic.html).
+## Authorship
 
-This application's source code has been released in leu of an upcoming refactoring and cleaning up of the code in preparation of adding a couple of new features.
+[Christian Blouin](https://github.com/bongotastic) and I created this application some number of years ago. Changes made to update to Python 3.8 and update to a Docker container were made by me later.
 
+## Possible Future Features
+
+  - Transform core to a RESTful API
+  - Anything else found in `./TODO.txt`
