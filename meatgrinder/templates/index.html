@@ -5,13 +5,13 @@
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
     <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
     <title>MeatGrinder: GURPS Hit Calculator</title>
 
     <meta name="author" content="Alexander Safatli, Christian Blouin" />
-    <meta name="description" content="Hit Locator for the GURPS Roleplaying System" />
+    <meta name="description" content="GURPS Hit Locator" />
 
     <!-- JQuery -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -158,7 +158,7 @@
               <h5 class="center">Critical</h5>
               {% if hit.critical %}
               <p class="center">If the hit was <strong>critical</strong>, the following occurs.</p>
-              <p class="center light">{{ hit.critical }}</p>
+              <p class="center light">{{ hit.critical|safe }}</p>
               {% else %}
               <p class="center light">No special event is associated with criticals.</p>
               {% endif %}
@@ -171,14 +171,14 @@
               <h5 class="center">Notes</h5>
                 {% if hit.wound %}
                 <p class="center light">In case of a <strong>major wound</strong>,</p>
-                <p class="center light">{{ hit.wound }}</p>
+                <p class="center light">{{ hit.wound|safe }}</p>
                 {% endif %}
                 {% if hit.notes %}
                 <p class="center">Because this location was hit,</p>
                 <p>
                   <ol>
                     {% for note in hit.notes %}
-                    <li>{{ note }}</li>
+                    <li>{{ note|safe }}</li>
                     {% endfor %}
                   </ol>
                 </p>

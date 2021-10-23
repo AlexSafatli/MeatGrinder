@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx_meatgrinder
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "5300:80"
+    depends_on:
+      - meatgrinder
+  meatgrinder:
+    image: meatgrinder:dev
+    build: .
+    env_file:
+      - .env
+    command: >
+      gunicorn -b 0.0.0.0:5300
+      --access-logfile -
+      --reload
+      meatgrinder:app
+    expose:
+      - "5300"
+    volumes:
+      - ./:/app
